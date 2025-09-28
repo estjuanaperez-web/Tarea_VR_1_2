@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muñeco Paso 1</title>
+  <title>Muñeco Paso 2</title>
   <style>
     body { margin: 0; overflow: hidden; background: #e0f7fa; }
     canvas { display: block; }
@@ -23,32 +23,50 @@
     const light = new THREE.PointLight(0xffffff, 1.2);
     light.position.set(5, 5, 5);
     scene.add(light);
-    const ambient = new THREE.AmbientLight(0x404040);
-    scene.add(ambient);
+    scene.add(new THREE.AmbientLight(0x404040));
 
     // material blanco
     const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
 
-    // esfera grande (abajo)
+    // cuerpo
     const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
     bottom.position.set(0, -1.5, 0);
     scene.add(bottom);
 
-    // esfera mediana (centro)
     const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
     middle.position.set(0, 0.5, 0);
     scene.add(middle);
 
-    // esfera pequeña (cabeza)
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
     head.position.set(0, 2.2, 0);
     scene.add(head);
 
+    // === OJOS ===
+    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
+    const eyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
+
+    const leftEye = new THREE.Mesh(eyeGeo, blackMat);
+    leftEye.position.set(-0.25, 2.3, 0.85);
+    scene.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeo, blackMat);
+    rightEye.position.set(0.25, 2.3, 0.85);
+    scene.add(rightEye);
+
+    // === NARIZ (cono naranja) ===
+    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 16), orangeMat);
+    nose.position.set(0, 2.15, 0.95);
+    nose.rotation.x = Math.PI / 2; // apuntando hacia adelante
+    scene.add(nose);
+
+    // cámara
     camera.position.z = 6;
 
+    // animación
     function animate(){
       requestAnimationFrame(animate);
-      scene.rotation.y += 0.01; // giro suave
+      scene.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
     animate();
