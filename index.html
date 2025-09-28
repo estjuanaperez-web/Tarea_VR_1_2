@@ -1,164 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>3D Cube with Device Motion</title>
+  <title>Simple 3D Cube</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
+    canvas { width: 100vw; height: 100vh; display: block; }
   </style>
 </head>
 <body>
-  <canvas id="glCanvas" width="500" height="400"></canvas>
+<canvas id="glCanvas"></canvas>
 
-  <script>
-    const canvas = document.getElementById("glCanvas");
-    const gl = canvas.getContext("webgl");
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 
-    if (!gl) {
-      alert("WebGL not supported");
-    }
+<script>
+  // Scene, camera, renderer
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("glCanvas")});
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // ===== SHADERS =====
-    const vsSource = `
-      attribute vec4 aVertexPosition;
-      attribute vec4 aVertexColor;
-      uniform mat4 uModelViewMatrix;
-      uniform mat4 uProjectionMatrix;
-      varying lowp vec4 vColor;
-      void main(void) {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-        vColor = aVertexColor;
-      }
-    `;
-    const fsSource = `
-      varying lowp vec4 vColor;
-      void main(void) {
-        gl_FragColor = vColor;
-      }
-    `;
+  // Cube with 6 colored faces
+  const geometry = new THREE.BoxGeometry();
+  const materials = [
+    new THREE.MeshBasicMaterial({color: 0xff0000}), // red
+    new THREE.MeshBasicMaterial({color: 0x00ff00}), // green
+    new THREE.MeshBasicMaterial({color: 0x0000ff}), // blue
+    new THREE.MeshBasicMaterial({color: 0xffff00}), // yellow
+    new THREE.MeshBasicMaterial({color: 0xff00ff}), // magenta
+    new THREE.MeshBasicMaterial({color: 0x00ffff})  // cyan
+  ];
+  const cube = new THREE.Mesh(geometry, materials);
+  scene.add(cube);
 
-    function loadShader(type, source) {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      return shader;
-    }
-    const vertexShader = loadShader(gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl.FRAGMENT_SHADER, fsSource);
+  camera.position.z = 3; // move camera back
 
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
+  // Rotation variables
+  let rotX = 0, rotY = 0;
 
-    const programInfo = {
-      program: shaderProgram,
-      attribLocations: {
-        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-        vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-      },
-      uniformLocations: {
-        projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-        modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-      },
-    };
+  // Read phone orientation
+  window.addEventListener("deviceorientation", (event) => {
+    rotY = THREE.MathUtils.degToRad(event.gamma || 0); // left/right
+    rotX = THREE.MathUtils.degToRad(event.beta || 0);  // forward/back
+  });
 
-    // ===== GEOMETRY =====
-    const positions = [
-      // Front
-      -1, -1,  1,   1, -1,  1,   1,  1,  1,  -1,  1,  1,
-      // Back
-      -1, -1, -1,  -1,  1, -1,   1,  1, -1,   1, -1, -1,
-    ];
-    const indices = [
-      0,1,2, 0,2,3,   4,5,6, 4,6,7,
-      5,3,2, 5,2,6,   4,7,1, 4,1,0,
-      7,6,2, 7,2,1,   4,0,3, 4,3,5
-    ];
-    const colors = [
-      [1,0,0,1],[0,1,0,1],[0,0,1,1],
-      [1,1,0,1],[1,0,1,1],[0,1,1,1]
-    ];
-    let cubeColors = [];
-    for (let c of colors) cubeColors = cubeColors.concat(c,c,c,c);
+  // Animate
+  function animate() {
+    requestAnimationFrame(animate);
+    cube.rotation.x = rotX;
+    cube.rotation.y = rotY;
+    renderer.render(scene, camera);
+  }
+  animate();
 
-    // Buffers
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeColors), gl.STATIC_DRAW);
-
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-    // ===== MATRICES =====
-    function identity() {
-      return [1,0,0,0,
-              0,1,0,0,
-              0,0,1,0,
-              0,0,0,1];
-    }
-    function perspective(out,fovy,aspect,near,far){
-      const f=1.0/Math.tan(fovy/2);
-      out[0]=f/aspect; out[5]=f; out[11]=-1;
-      out[10]=(far+near)/(near-far);
-      out[14]=(2*far*near)/(near-far);
-      out[1]=out[2]=out[3]=out[4]=out[6]=out[7]=out[8]=out[9]=out[12]=out[13]=out[15]=0;
-    }
-
-    // Orientation angles
-    let rotX = 0, rotY = 0;
-
-    // Listen to device orientation (phones/tablets)
-    window.addEventListener("deviceorientation", (event) => {
-      // gamma = left/right, beta = front/back
-      rotY = event.gamma * Math.PI/180;
-      rotX = event.beta * Math.PI/180;
-    });
-
-    function drawScene(){
-      gl.clearColor(0.9,0.9,0.9,1);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      gl.enable(gl.DEPTH_TEST);
-
-      const projectionMatrix = new Float32Array(16);
-      perspective(projectionMatrix, Math.PI/4, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
-
-      let modelViewMatrix = identity();
-      modelViewMatrix[14] = -6; // move back
-      // Rotate by device angles
-      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
-      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-      modelViewMatrix[5]=cosX; modelViewMatrix[6]=-sinX;
-      modelViewMatrix[9]=sinX; modelViewMatrix[10]=cosX;
-      modelViewMatrix[0]=cosY; modelViewMatrix[2]=sinY;
-      modelViewMatrix[8]=-sinY; modelViewMatrix[10]*=cosY;
-
-      // Position buffer
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition,3,gl.FLOAT,false,0,0);
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-
-      // Color buffer
-      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-      gl.vertexAttribPointer(programInfo.attribLocations.vertexColor,4,gl.FLOAT,false,0,0);
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-
-      gl.useProgram(programInfo.program);
-      gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix,false,projectionMatrix);
-      gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix,false,new Float32Array(modelViewMatrix));
-
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indexBuffer);
-      gl.drawElements(gl.TRIANGLES,36,gl.UNSIGNED_SHORT,0);
-
-      requestAnimationFrame(drawScene);
-    }
-    drawScene();
-  </script>
+  // Handle resize
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
 </body>
 </html>
