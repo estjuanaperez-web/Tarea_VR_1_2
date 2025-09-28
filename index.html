@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prueba Esfera</title>
+  <title>Muñeco Paso 1</title>
   <style>
     body { margin: 0; overflow: hidden; background: #e0f7fa; }
     canvas { display: block; }
@@ -19,24 +19,36 @@
     const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("snowCanvas"), antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // luz
+    // luces
     const light = new THREE.PointLight(0xffffff, 1.2);
     light.position.set(5, 5, 5);
     scene.add(light);
-
     const ambient = new THREE.AmbientLight(0x404040);
     scene.add(ambient);
 
-    // esfera blanca
+    // material blanco
     const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+
+    // esfera grande (abajo)
     const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
+    bottom.position.set(0, -1.5, 0);
     scene.add(bottom);
 
-    camera.position.z = 5;
+    // esfera mediana (centro)
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
+    middle.position.set(0, 0.5, 0);
+    scene.add(middle);
+
+    // esfera pequeña (cabeza)
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
+    head.position.set(0, 2.2, 0);
+    scene.add(head);
+
+    camera.position.z = 6;
 
     function animate(){
       requestAnimationFrame(animate);
-      scene.rotation.y += 0.01;
+      scene.rotation.y += 0.01; // giro suave
       renderer.render(scene, camera);
     }
     animate();
