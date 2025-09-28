@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muñeco Paso 3</title>
+  <title>Muñeco Paso 4</title>
   <style>
     body { margin: 0; overflow: hidden; background: #e0f7fa; }
     canvas { display: block; }
@@ -60,7 +60,7 @@
     nose.rotation.x = Math.PI / 2;
     scene.add(nose);
 
-    // === BOTONES EN EL PECHO ===
+    // === BOTONES ===
     const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
 
     const button1 = new THREE.Mesh(buttonGeo, blackMat);
@@ -74,6 +74,20 @@
     const button3 = new THREE.Mesh(buttonGeo, blackMat);
     button3.position.set(0, 0.2, 1.05);
     scene.add(button3);
+
+    // === BRAZOS (ramas) ===
+    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513}); // marrón
+    const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
+
+    const leftArm = new THREE.Mesh(armGeo, brownMat);
+    leftArm.position.set(-1.6, 0.8, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    scene.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, brownMat);
+    rightArm.position.set(1.6, 0.8, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    scene.add(rightArm);
 
     // cámara
     camera.position.z = 6;
