@@ -1,63 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Simple 3D Cube</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muñeco de nieve 3D</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    canvas { width: 100vw; height: 100vh; display: block; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-<canvas id="glCanvas"></canvas>
+  <canvas id="snowCanvas"></canvas>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <!-- Load Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 
-<script>
-  // Scene, camera, renderer
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("glCanvas")});
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  <script>
+    // Setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("yellow"); // background like your 2D canvas
 
-  // Cube with 6 colored faces
-  const geometry = new THREE.BoxGeometry();
-  const materials = [
-    new THREE.MeshBasicMaterial({color: 0xff0000}), // red
-    new THREE.MeshBasicMaterial({color: 0x00ff00}), // green
-    new THREE.MeshBasicMaterial({color: 0x0000ff}), // blue
-    new THREE.MeshBasicMaterial({color: 0xffff00}), // yellow
-    new THREE.MeshBasicMaterial({color: 0xff00ff}), // magenta
-    new THREE.MeshBasicMaterial({color: 0x00ffff})  // cyan
-  ];
-  const cube = new THREE.Mesh(geometry, materials);
-  scene.add(cube);
-
-  camera.position.z = 3; // move camera back
-
-  // Rotation variables
-  let rotX = 0, rotY = 0;
-
-  // Read phone orientation
-  window.addEventListener("deviceorientation", (event) => {
-    rotY = THREE.MathUtils.degToRad(event.gamma || 0); // left/right
-    rotX = THREE.MathUtils.degToRad(event.beta || 0);  // forward/back
-  });
-
-  // Animate
-  function animate() {
-    requestAnimationFrame(animate);
-    cube.rotation.x = rotX;
-    cube.rotation.y = rotY;
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  // Handle resize
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("snowCanvas")});
     renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-</script>
+
+    // Light
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    // Materials
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+    const brownMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+
+    // Snowman body (spheres)
+    const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.1, 32, 32), whiteMat);
+    const top = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), whiteMat);
+
+    middle.position.y = 2.2;
+    top.position.y = 3.8;
+
+    scene.add(bottom, middle, top);
+
+    // Arms (cylinders)
+    const armGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
+    const rightArm = new THREE.Mesh(armGeometry, brownMat);
+    const leftArm = new THREE.Mesh(armGeometry, brownMat);
+
+    rightArm.rotation.z = Math.PI / 4;
+    rightArm.position.set(2, 2.2, 0);
+
+    leftArm.rotation.z = -Math.PI / 4;
+    leftArm.position.set(-2, 2.2, 0);
+
+    scene.add(rightArm, leftArm);
+
+    // Hat (cylinder + box)
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.1, 32), blackMat);
+    const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.8, 32), blackMat);
+
+    hatBrim.position.y = 4.6;
+    hatTop.position.y = 5.0;
+
+    scene.add(hatBrim, hatTop);
+
+    // Position camera
+    camera.position.z = 8;
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      scene.rotation.y += 0.01; // rotate snowman slowly
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize handling
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
