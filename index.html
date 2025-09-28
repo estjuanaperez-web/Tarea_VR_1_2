@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muñeco Paso 4</title>
+  <title>Muñeco Paso 5</title>
   <style>
     body { margin: 0; overflow: hidden; background: #e0f7fa; }
     canvas { display: block; }
@@ -75,8 +75,8 @@
     button3.position.set(0, 0.2, 1.05);
     scene.add(button3);
 
-    // === BRAZOS (ramas) ===
-    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513}); // marrón
+    // === BRAZOS ===
+    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
     const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
 
     const leftArm = new THREE.Mesh(armGeo, brownMat);
@@ -88,6 +88,18 @@
     rightArm.position.set(1.6, 0.8, 0);
     rightArm.rotation.z = -Math.PI / 4;
     scene.add(rightArm);
+
+    // === SOMBRERO ===
+    const hatMat = new THREE.MeshStandardMaterial({color: 0x000000});
+    // Ala del sombrero (plano)
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
+    brim.position.set(0, 2.9, 0);
+    scene.add(brim);
+
+    // Cuerpo del sombrero
+    const topHat = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 32), hatMat);
+    topHat.position.set(0, 3.4, 0);
+    scene.add(topHat);
 
     // cámara
     camera.position.z = 6;
