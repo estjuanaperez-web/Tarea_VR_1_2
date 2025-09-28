@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Muñeco de nieve 3D</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; background: #e0f7fa; } /* soft sky color */
     canvas { display: block; }
   </style>
 </head>
@@ -18,33 +18,35 @@
   <script>
     // Setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("yellow"); // background like your 2D canvas
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("snowCanvas")});
+    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("snowCanvas"), antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Light
-    const light = new THREE.PointLight(0xffffff, 1);
+    // Lights
+    const light = new THREE.PointLight(0xffffff, 1.2);
     light.position.set(5, 5, 5);
     scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0x404040); // soft background light
+    scene.add(ambient);
 
     // Materials
     const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
     const brownMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const orangeMat = new THREE.MeshStandardMaterial({ color: 0xffa500 });
 
-    // Snowman body (spheres)
+    // Snowman body
     const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
     const middle = new THREE.Mesh(new THREE.SphereGeometry(1.1, 32, 32), whiteMat);
     const top = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), whiteMat);
 
     middle.position.y = 2.2;
     top.position.y = 3.8;
-
     scene.add(bottom, middle, top);
 
-    // Arms (cylinders)
+    // Arms
     const armGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
     const rightArm = new THREE.Mesh(armGeometry, brownMat);
     const leftArm = new THREE.Mesh(armGeometry, brownMat);
@@ -57,7 +59,7 @@
 
     scene.add(rightArm, leftArm);
 
-    // Hat (cylinder + box)
+    // Hat
     const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.1, 32), blackMat);
     const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.8, 32), blackMat);
 
@@ -66,13 +68,34 @@
 
     scene.add(hatBrim, hatTop);
 
-    // Position camera
+    // Nose (cone)
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.8, 32), orangeMat);
+    nose.position.set(0, 3.8, 0.8);
+    nose.rotation.x = Math.PI / 2;
+    scene.add(nose);
+
+    // Eyes (small black spheres)
+    const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), blackMat);
+    const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), blackMat);
+
+    eye1.position.set(-0.25, 4.1, 0.75);
+    eye2.position.set(0.25, 4.1, 0.75);
+    scene.add(eye1, eye2);
+
+    // Buttons (black spheres on middle body)
+    for (let i = 0; i < 3; i++) {
+      const button = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), blackMat);
+      button.position.set(0, 3 - i * 0.7, 1.05);
+      scene.add(button);
+    }
+
+    // Camera
     camera.position.z = 8;
 
-    // Animation loop
+    // Animate
     function animate() {
       requestAnimationFrame(animate);
-      scene.rotation.y += 0.01; // rotate snowman slowly
+      scene.rotation.y += 0.01; // rotate
       renderer.render(scene, camera);
     }
     animate();
