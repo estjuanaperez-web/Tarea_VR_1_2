@@ -102,8 +102,8 @@
     // === BUFANDA (rojo brillante) ===
     const scarfMat = new THREE.MeshStandardMaterial({color: 0xFF0000});
     // aro alrededor del cuello
-    const scarfRing = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.15, 16, 100), scarfMat);
-    scarfRing.position.set(0, 1.6, 0);
+    const scarfRing = new THREE.Mesh(new THREE.TorusGeometry(20, 5, 16, 100), scarfMat);
+    scarfRing.position.set(0, 50, 0);
     scene.add(scarfRing);
 
     // parte colgante
