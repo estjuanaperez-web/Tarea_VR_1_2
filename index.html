@@ -79,18 +79,85 @@
       light.position.set(0, 20, 0);
       scene.add(light);
 
-      // Muñeco de nieve
-      const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), material);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), material);
+      // === MUÑECO EN UN GRUPO ===
+    const snowman = new THREE.Group();
+    scene.add(snowman);
 
-      body.position.y = 1;
-      head.position.y = 2.4;
+    const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
+    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
+    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
+    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000});
 
-      snowman = new THREE.Group();
-      snowman.add(body);
-      snowman.add(head);
-      scene.add(snowman);
+    // cuerpo
+    const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
+    bottom.position.set(0, -1.5, 0);
+    snowman.add(bottom);
+
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
+    middle.position.set(0, 0.5, 0);
+    snowman.add(middle);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
+    head.position.set(0, 2.2, 0);
+    snowman.add(head);
+
+    // ojos
+    const eyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
+    const leftEye = new THREE.Mesh(eyeGeo, blackMat);
+    leftEye.position.set(-0.25, 2.3, 0.85);
+    snowman.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeo, blackMat);
+    rightEye.position.set(0.25, 2.3, 0.85);
+    snowman.add(rightEye);
+
+    // nariz
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 16), orangeMat);
+    nose.position.set(0, 2.15, 0.95);
+    nose.rotation.x = Math.PI / 2;
+    snowman.add(nose);
+
+    // botones
+    const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const button1 = new THREE.Mesh(buttonGeo, blackMat);
+    button1.position.set(0, 1.2, 1.05);
+    snowman.add(button1);
+
+    const button2 = new THREE.Mesh(buttonGeo, blackMat);
+    button2.position.set(0, 0.7, 1.15);
+    snowman.add(button2);
+
+    const button3 = new THREE.Mesh(buttonGeo, blackMat);
+    button3.position.set(0, 0.2, 1.05);
+    snowman.add(button3);
+
+    // brazos
+    const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
+    const leftArm = new THREE.Mesh(armGeo, brownMat);
+    leftArm.position.set(-1.6, 0.8, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    snowman.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, brownMat);
+    rightArm.position.set(1.6, 0.8, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    snowman.add(rightArm);
+
+    // sombrero
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
+    brim.position.set(0, 2.9, 0);
+    snowman.add(brim);
+
+    const topHat = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 32), hatMat);
+    topHat.position.set(0, 3.4, 0);
+    snowman.add(topHat);
+
+    // posición inicial del muñeco frente al usuario
+    snowman.position.set(0, 0, -3);
+
+    // cámara en altura de persona
+    camera.position.set(0, 1.6, 0);
 
       window.addEventListener('resize', onWindowResize);
 
