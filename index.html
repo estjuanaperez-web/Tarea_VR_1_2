@@ -3,124 +3,150 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muñeco Paso 6</title>
+  <title>Muñeco de nieve 3D</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #e0f7fa; }
+    body { margin: 0; background: black; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="snowCanvas"></canvas>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
   <script>
+    // === Escena, cámara y render ===
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById("snowCanvas"), antialias: true});
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    // luces
-    const light = new THREE.PointLight(0xffffff, 1.2);
-    light.position.set(5, 5, 5);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // === Luces ===
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7);
     scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040));
+    scene.add(new THREE.AmbientLight(0x404040, 0.6));
 
-    // material blanco
-    const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+    // === Cuerpo del muñeco ===
+    const esfera1 = new THREE.Mesh(
+      new THREE.SphereGeometry(30, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xffffff })
+    );
+    esfera1.position.set(0, 30, 0);
+    scene.add(esfera1);
 
-    // cuerpo
-    const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
-    bottom.position.set(0, -1.5, 0);
-    scene.add(bottom);
+    const esfera2 = new THREE.Mesh(
+      new THREE.SphereGeometry(22, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xffffff })
+    );
+    esfera2.position.set(0, 70, 0);
+    scene.add(esfera2);
 
-    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
-    middle.position.set(0, 0.5, 0);
-    scene.add(middle);
+    const esfera3 = new THREE.Mesh(
+      new THREE.SphereGeometry(15, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xffffff })
+    );
+    esfera3.position.set(0, 100, 0);
+    scene.add(esfera3);
 
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
-    head.position.set(0, 2.2, 0);
-    scene.add(head);
+    // === Ojos ===
+    function crearOjo(x, y, z) {
+      const ojo = new THREE.Mesh(
+        new THREE.SphereGeometry(2, 16, 16),
+        new THREE.MeshPhongMaterial({ color: 0x000000 })
+      );
+      ojo.position.set(x, y, z);
+      return ojo;
+    }
+    scene.add(crearOjo(-5, 105, 14));
+    scene.add(crearOjo(5, 105, 14));
 
-    // === OJOS ===
-    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
-    const eyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
+    // === Nariz (cono naranja) ===
+    const nariz = new THREE.Mesh(
+      new THREE.ConeGeometry(2, 10, 16),
+      new THREE.MeshPhongMaterial({ color: 0xffa500 })
+    );
+    nariz.position.set(0, 100, 15);
+    nariz.rotation.x = Math.PI / 2;
+    scene.add(nariz);
 
-    const leftEye = new THREE.Mesh(eyeGeo, blackMat);
-    leftEye.position.set(-0.25, 2.3, 0.85);
-    scene.add(leftEye);
+    // === Botones ===
+    function crearBoton(y) {
+      const boton = new THREE.Mesh(
+        new THREE.SphereGeometry(2.5, 16, 16),
+        new THREE.MeshPhongMaterial({ color: 0x000000 })
+      );
+      boton.position.set(0, y, 20);
+      return boton;
+    }
+    scene.add(crearBoton(85));
+    scene.add(crearBoton(70));
+    scene.add(crearBoton(55));
 
-    const rightEye = new THREE.Mesh(eyeGeo, blackMat);
-    rightEye.position.set(0.25, 2.3, 0.85);
-    scene.add(rightEye);
+    // === Brazos ===
+    function crearBrazo(x, y, z, rotZ) {
+      const brazo = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.8, 0.8, 40, 8),
+        new THREE.MeshPhongMaterial({ color: 0x8b4513 })
+      );
+      brazo.position.set(x, y, z);
+      brazo.rotation.z = rotZ;
+      return brazo;
+    }
+    scene.add(crearBrazo(-30, 70, 0, Math.PI / 4)); // izquierdo
+    scene.add(crearBrazo(30, 70, 0, -Math.PI / 4)); // derecho
 
-    // === NARIZ ===
-    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
-    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 16), orangeMat);
-    nose.position.set(0, 2.15, 0.95);
-    nose.rotation.x = Math.PI / 2;
-    scene.add(nose);
+    // === Sombrero ===
+    const alaSombrero = new THREE.Mesh(
+      new THREE.CylinderGeometry(12, 12, 2, 32),
+      new THREE.MeshPhongMaterial({ color: 0x8b0000 }) // rojo oscuro
+    );
+    alaSombrero.position.set(0, 115, 0);
+    scene.add(alaSombrero);
 
-    // === BOTONES ===
-    const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const copaSombrero = new THREE.Mesh(
+      new THREE.CylinderGeometry(8, 8, 15, 32),
+      new THREE.MeshPhongMaterial({ color: 0x8b0000 }) // rojo oscuro
+    );
+    copaSombrero.position.set(0, 122, 0);
+    scene.add(copaSombrero);
 
-    const button1 = new THREE.Mesh(buttonGeo, blackMat);
-    button1.position.set(0, 1.2, 1.05);
-    scene.add(button1);
+    // === Bufanda (torus alrededor del cuello) ===
+    const bufanda = new THREE.Mesh(
+      new THREE.TorusGeometry(18, 3.5, 16, 100),
+      new THREE.MeshPhongMaterial({ color: 0xff0000 }) // rojo brillante
+    );
+    bufanda.position.set(0, 90, 0);
+    bufanda.rotation.x = Math.PI / 2;
+    scene.add(bufanda);
 
-    const button2 = new THREE.Mesh(buttonGeo, blackMat);
-    button2.position.set(0, 0.7, 1.15);
-    scene.add(button2);
+    // === Tira colgante de la bufanda ===
+    const colgante = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.5, 3.5, 25, 32),
+      new THREE.MeshPhongMaterial({ color: 0xff0000 })
+    );
+    colgante.position.set(10, 78, 0); // un lado del cuello
+    colgante.rotation.z = Math.PI / 15; // ligera inclinación
+    scene.add(colgante);
 
-    const button3 = new THREE.Mesh(buttonGeo, blackMat);
-    button3.position.set(0, 0.2, 1.05);
-    scene.add(button3);
+    // === Cámara inicial ===
+    camera.position.z = 200;
 
-    // === BRAZOS ===
-    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
-    const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
-
-    const leftArm = new THREE.Mesh(armGeo, brownMat);
-    leftArm.position.set(-1.6, 0.8, 0);
-    leftArm.rotation.z = Math.PI / 4;
-    scene.add(leftArm);
-
-    const rightArm = new THREE.Mesh(armGeo, brownMat);
-    rightArm.position.set(1.6, 0.8, 0);
-    rightArm.rotation.z = -Math.PI / 4;
-    scene.add(rightArm);
-
-    // === SOMBRERO (rojo oscuro) ===
-    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000});
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
-    brim.position.set(0, 2.9, 0);
-    scene.add(brim);
-
-    const topHat = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 32), hatMat);
-    topHat.position.set(0, 3.4, 0);
-    scene.add(topHat);
-
-    // === BUFANDA (rojo brillante) ===
-    const scarfMat = new THREE.MeshStandardMaterial({color: 0xFF0000});
-    // aro alrededor del cuello
-    const scarfRing = new THREE.Mesh(new THREE.TorusGeometry(20, 5, 16, 100), scarfMat);
-    scarfRing.position.set(0, 50, 0);
-    scene.add(scarfRing);
-
-    // parte colgante
-    const scarfTail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1, 0.2), scarfMat);
-    scarfTail.position.set(0.4, 1.1, 0.3);
-    scene.add(scarfTail);
-
-    // cámara
-    camera.position.z = 6;
-
-    // animación
-    function animate(){
+    // === Animación ===
+    function animate() {
       requestAnimationFrame(animate);
-      scene.rotation.y += 0.01;
+      controls.update();
       renderer.render(scene, camera);
     }
     animate();
+
+    // === Ajuste al tamaño de pantalla ===
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
