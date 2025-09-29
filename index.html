@@ -1,89 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Snowman VR</title>
-    <style>
-      body { margin: 0; }
-      canvas { display: block; }
-    </style>
-  </head>
-  <body>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/DeviceOrientationControls.js"></script>
-    <script>
-      // === Escena, cámara, render ===
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muñeco VR</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/webxr/VRButton.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB); // azul claro
 
-      // === Luces ===
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambientLight);
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-      dirLight.position.set(5, 10, 7);
-      scene.add(dirLight);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
 
-      // === Muñeco de nieve ===
-      const material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-      const body = new THREE.Mesh(new THREE.SphereGeometry(2, 32, 32), material);
-      body.position.y = 2;
-      scene.add(body);
+    // habilitar VR
+    renderer.xr.enabled = true;
+    document.body.appendChild(THREE.VRButton.createButton(renderer));
 
-      const middle = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), material);
-      middle.position.y = 4.5;
-      scene.add(middle);
+    // luces
+    const light = new THREE.PointLight(0xffffff, 1.2);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
 
-      const head = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), material);
-      head.position.y = 6.5;
-      scene.add(head);
+    // material blanco
+    const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
 
-      // Botones
-      const buttonMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
-      for (let i = 0; i < 3; i++) {
-        const button = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), buttonMaterial);
-        button.position.set(0, 4 + i * 0.6, 1.5);
-        scene.add(button);
-      }
+    // cuerpo
+    const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
+    bottom.position.set(0, -1.5, 0);
+    scene.add(bottom);
 
-      // Sombrero
-      const hatMaterial = new THREE.MeshPhongMaterial({ color: 0x550000 }); // rojo oscuro
-      const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.2, 32), hatMaterial);
-      hatBrim.position.y = 7.3;
-      scene.add(hatBrim);
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
+    middle.position.set(0, 0.5, 0);
+    scene.add(middle);
 
-      const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32), hatMaterial);
-      hatTop.position.y = 8.1;
-      scene.add(hatTop);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
+    head.position.set(0, 2.2, 0);
+    scene.add(head);
 
-      // === Cámara inicial ===
-      camera.position.set(0, 5, 12);
+    // ojos
+    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
+    const eyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
 
-      // === Controles VR (giroscopio) ===
-      const controls = new THREE.DeviceOrientationControls(camera);
+    const leftEye = new THREE.Mesh(eyeGeo, blackMat);
+    leftEye.position.set(-0.25, 2.3, 0.85);
+    scene.add(leftEye);
 
-      // === Animación ===
-      function animate() {
-        requestAnimationFrame(animate);
-        controls.update();  // <-- actualiza orientación según móvil
+    const rightEye = new THREE.Mesh(eyeGeo, blackMat);
+    rightEye.position.set(0.25, 2.3, 0.85);
+    scene.add(rightEye);
+
+    // nariz
+    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 16), orangeMat);
+    nose.position.set(0, 2.15, 0.95);
+    nose.rotation.x = Math.PI / 2;
+    scene.add(nose);
+
+    // botones
+    const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const button1 = new THREE.Mesh(buttonGeo, blackMat);
+    button1.position.set(0, 1.2, 1.05);
+    scene.add(button1);
+
+    const button2 = new THREE.Mesh(buttonGeo, blackMat);
+    button2.position.set(0, 0.7, 1.15);
+    scene.add(button2);
+
+    const button3 = new THREE.Mesh(buttonGeo, blackMat);
+    button3.position.set(0, 0.2, 1.05);
+    scene.add(button3);
+
+    // brazos
+    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
+    const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
+
+    const leftArm = new THREE.Mesh(armGeo, brownMat);
+    leftArm.position.set(-1.6, 0.8, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    scene.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, brownMat);
+    rightArm.position.set(1.6, 0.8, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    scene.add(rightArm);
+
+    // sombrero
+    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000}); // rojo oscuro
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
+    brim.position.set(0, 2.9, 0);
+    scene.add(brim);
+
+    const topHat = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 32), hatMat);
+    topHat.position.set(0, 3.4, 0);
+    scene.add(topHat);
+
+    // cámara
+    camera.position.z = 6;
+
+    // animación VR
+    function animate(){
+      renderer.setAnimationLoop(() => {
         renderer.render(scene, camera);
-      }
-      animate();
-
-      // === Resize ===
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
       });
-    </script>
-  </body>
+    }
+    animate();
+  </script>
+</body>
 </html>
