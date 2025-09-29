@@ -24,13 +24,6 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // === Piso blanco ===
-      const floorGeometry = new THREE.PlaneGeometry(500, 500);
-      const floorMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
-      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-      floor.rotation.x = -Math.PI / 2;
-      scene.add(floor);
-
       // === Luces ===
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
       scene.add(ambientLight);
