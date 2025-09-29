@@ -5,32 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Muñeco VR</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; background: #000; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/webxr/VRButton.js"></script>
-  <script>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js";
+    import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/webxr/VRButton.js";
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB); // azul claro
-
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x87CEEB); // aseguramos el color azul
     document.body.appendChild(renderer.domElement);
-
-    // habilitar VR
+    document.body.appendChild(VRButton.createButton(renderer));
     renderer.xr.enabled = true;
-    document.body.appendChild(THREE.VRButton.createButton(renderer));
 
     // luces
     const light = new THREE.PointLight(0xffffff, 1.2);
@@ -75,6 +65,7 @@
 
     // botones
     const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
+
     const button1 = new THREE.Mesh(buttonGeo, blackMat);
     button1.position.set(0, 1.2, 1.05);
     scene.add(button1);
@@ -102,7 +93,7 @@
     scene.add(rightArm);
 
     // sombrero
-    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000}); // rojo oscuro
+    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000});
     const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
     brim.position.set(0, 2.9, 0);
     scene.add(brim);
@@ -111,16 +102,21 @@
     topHat.position.set(0, 3.4, 0);
     scene.add(topHat);
 
-    // cámara
-    camera.position.z = 6;
+    // cámara (altura ojos de persona ~1.6m)
+    camera.position.set(0, 1.6, 3);
 
-    // animación VR
-    function animate(){
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-      });
-    }
-    animate();
+    // animación
+    renderer.setAnimationLoop(() => {
+      scene.rotation.y += 0.003;
+      renderer.render(scene, camera);
+    });
+
+    // resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
