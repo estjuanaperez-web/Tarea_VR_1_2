@@ -25,6 +25,7 @@
 
     const renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x87CEEB); // aseguramos el color azul
     document.body.appendChild(renderer.domElement);
 
     // habilitar VR
