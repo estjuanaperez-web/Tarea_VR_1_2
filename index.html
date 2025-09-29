@@ -3,13 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muñeco VR</title>
+  <title>Muñeco VR con Controles</title>
   <style>
     body { margin: 0; overflow: hidden; background: #000; }
     canvas { display: block; }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+    }
+    .btn {
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn:active {
+      background: rgba(200,200,200,0.9);
+    }
   </style>
 </head>
 <body>
+  <!-- Botones virtuales -->
+  <div class="controls">
+    <button id="btnForward" class="btn">⬆ Avanzar</button>
+    <button id="btnBackward" class="btn">⬇ Retroceder</button>
+  </div>
+
   <script type="module">
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js";
     import { VRButton } from "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/webxr/VRButton.js";
@@ -28,91 +55,114 @@
     scene.add(light);
     scene.add(new THREE.AmbientLight(0x404040));
 
-    // material blanco
+    // === MUÑECO EN UN GRUPO ===
+    const snowman = new THREE.Group();
+    scene.add(snowman);
+
     const whiteMat = new THREE.MeshStandardMaterial({color: 0xffffff});
+    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
+    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
+    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
+    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000});
 
     // cuerpo
     const bottom = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), whiteMat);
     bottom.position.set(0, -1.5, 0);
-    scene.add(bottom);
+    snowman.add(bottom);
 
     const middle = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), whiteMat);
     middle.position.set(0, 0.5, 0);
-    scene.add(middle);
+    snowman.add(middle);
 
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), whiteMat);
     head.position.set(0, 2.2, 0);
-    scene.add(head);
+    snowman.add(head);
 
     // ojos
-    const blackMat = new THREE.MeshStandardMaterial({color: 0x000000});
     const eyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
-
     const leftEye = new THREE.Mesh(eyeGeo, blackMat);
     leftEye.position.set(-0.25, 2.3, 0.85);
-    scene.add(leftEye);
+    snowman.add(leftEye);
 
     const rightEye = new THREE.Mesh(eyeGeo, blackMat);
     rightEye.position.set(0.25, 2.3, 0.85);
-    scene.add(rightEye);
+    snowman.add(rightEye);
 
     // nariz
-    const orangeMat = new THREE.MeshStandardMaterial({color: 0xff6600});
     const nose = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.6, 16), orangeMat);
     nose.position.set(0, 2.15, 0.95);
     nose.rotation.x = Math.PI / 2;
-    scene.add(nose);
+    snowman.add(nose);
 
     // botones
     const buttonGeo = new THREE.SphereGeometry(0.12, 16, 16);
-
     const button1 = new THREE.Mesh(buttonGeo, blackMat);
     button1.position.set(0, 1.2, 1.05);
-    scene.add(button1);
+    snowman.add(button1);
 
     const button2 = new THREE.Mesh(buttonGeo, blackMat);
     button2.position.set(0, 0.7, 1.15);
-    scene.add(button2);
+    snowman.add(button2);
 
     const button3 = new THREE.Mesh(buttonGeo, blackMat);
     button3.position.set(0, 0.2, 1.05);
-    scene.add(button3);
+    snowman.add(button3);
 
     // brazos
-    const brownMat = new THREE.MeshStandardMaterial({color: 0x8B4513});
     const armGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 12);
-
     const leftArm = new THREE.Mesh(armGeo, brownMat);
     leftArm.position.set(-1.6, 0.8, 0);
     leftArm.rotation.z = Math.PI / 4;
-    scene.add(leftArm);
+    snowman.add(leftArm);
 
     const rightArm = new THREE.Mesh(armGeo, brownMat);
     rightArm.position.set(1.6, 0.8, 0);
     rightArm.rotation.z = -Math.PI / 4;
-    scene.add(rightArm);
+    snowman.add(rightArm);
 
     // sombrero
-    const hatMat = new THREE.MeshStandardMaterial({color: 0x8B0000});
     const brim = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32), hatMat);
     brim.position.set(0, 2.9, 0);
-    scene.add(brim);
+    snowman.add(brim);
 
     const topHat = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1, 32), hatMat);
     topHat.position.set(0, 3.4, 0);
-    scene.add(topHat);
+    snowman.add(topHat);
 
-    // cámara (altura ojos de persona ~1.6m)
-    camera.position.set(0, 1.6, 3);
+    // posición inicial del muñeco frente al usuario
+    snowman.position.set(0, 0, -3);
 
-    // animación
+    // cámara en altura de persona
+    camera.position.set(0, 1.6, 0);
+
+    // === MOVIMIENTO CON BOTONES ===
+    const moveDirection = new THREE.Vector3();
+    const speed = 0.05;
+    let moveForward = false;
+    let moveBackward = false;
+
+    document.getElementById("btnForward").addEventListener("mousedown", () => moveForward = true);
+    document.getElementById("btnForward").addEventListener("mouseup", () => moveForward = false);
+    document.getElementById("btnBackward").addEventListener("mousedown", () => moveBackward = true);
+    document.getElementById("btnBackward").addEventListener("mouseup", () => moveBackward = false);
+
+    // soporte para touch (móvil)
+    document.getElementById("btnForward").addEventListener("touchstart", e => { e.preventDefault(); moveForward = true; });
+    document.getElementById("btnForward").addEventListener("touchend", e => { e.preventDefault(); moveForward = false; });
+    document.getElementById("btnBackward").addEventListener("touchstart", e => { e.preventDefault(); moveBackward = true; });
+    document.getElementById("btnBackward").addEventListener("touchend", e => { e.preventDefault(); moveBackward = false; });
+
+    // animación principal
     renderer.setAnimationLoop(() => {
-      scene.rotation.y += 0.003;
+      camera.getWorldDirection(moveDirection);
+      if (moveForward) camera.position.addScaledVector(moveDirection, speed);
+      if (moveBackward) camera.position.addScaledVector(moveDirection, -speed);
+
       renderer.render(scene, camera);
     });
 
     // resize
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
